@@ -1,0 +1,239 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="700" viewBox="0 0 900 700">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="15" stdDeviation="20" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+
+  <!-- 背景设计 -->
+  <rect width="100%" height="100%" fill="#f4f7f6" />
+  <circle cx="100" cy="80" r="200" fill="#e8f0eb" opacity="0.6" />
+  <circle cx="800" cy="600" r="250" fill="#e8f0eb" opacity="0.6" />
+
+  <!-- 主体容器 -->
+  <foreignObject x="40" y="40" width="820" height="620">
+    <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; display: flex; flex-direction: column; height: 100%; background: #ffffff; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden; position: relative;">
+      
+      <!-- 顶部标题 -->
+      <div style="background: linear-gradient(135deg, #FF7E5F, #FEB47B); color: white; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 2px;">
+        🛒 沉浸式中文对话 - 日常活动与学习
+      </div>
+
+      <!-- 启动屏 (解锁音频权限) -->
+      <div id="startScreen" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 50; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: opacity 0.4s;">
+        <div style="font-size: 65px; margin-bottom: 20px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));">▶️</div>
+        <h1 style="color: #FF7E5F; margin: 0 0 10px 0;">点击开始 / Click to Start</h1>
+        <p style="color: #555; font-size: 15px; margin-top: 15px; max-width: 80%; text-align: center;">
+          已启用“男女双声”及“自然语调拟真”引擎<br/>请确保电脑扬声器已开启。
+        </p>
+      </div>
+
+      <!-- 内容展示区 -->
+      <div id="contentBox" style="flex: 1; padding: 30px 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; overflow-y: auto;">
+        
+        <!-- 说话人标签 -->
+        <div id="speakerTag" style="display: inline-block; padding: 10px 30px; border-radius: 40px; font-size: 20px; font-weight: bold; margin-bottom: 30px; transition: all 0.3s;">
+          🧔🏻‍♂️ 王一飞
+        </div>
+        
+        <!-- 拼音 -->
+        <div id="pinyin" style="font-size: 34px; color: #d35400; margin-bottom: 20px; font-family: 'Arial', sans-serif; letter-spacing: 1px;">
+          Nǐ zài zuò shénme?
+        </div>
+        
+        <!-- 汉字 -->
+        <div id="hanzi" style="font-size: 52px; color: #2c3e50; margin-bottom: 30px; font-weight: 600; line-height: 1.4;">
+          你在做什么？
+        </div>
+        
+        <!-- 英文翻译 -->
+        <div id="english" style="font-size: 22px; color: #7f8c8d; font-style: italic; background: #f8f9fa; padding: 15px 25px; border-radius: 15px; width: 85%;">
+          What are you doing?
+        </div>
+      </div>
+
+      <!-- 控制面板 -->
+      <div style="padding: 20px 40px; background: #fdfdfd; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee;">
+        <button id="prevBtn" style="padding: 15px 25px; font-size: 18px; font-weight: bold; cursor: pointer; border: none; background: #e0e0e0; color: #333; border-radius: 12px; transition: 0.2s;">
+          &lt; 上一句
+        </button>
+        
+        <button id="playBtn" style="padding: 18px 45px; font-size: 22px; font-weight: bold; cursor: pointer; border: none; background: #FF7E5F; color: white; border-radius: 40px; box-shadow: 0 8px 20px rgba(255, 126, 95, 0.4); transition: 0.2s;">
+          🔊 播放 Play
+        </button>
+        
+        <button id="nextBtn" style="padding: 15px 25px; font-size: 18px; font-weight: bold; cursor: pointer; border: none; background: #FF7E5F; color: white; border-radius: 12px; box-shadow: 0 5px 15px rgba(255, 126, 95, 0.3); transition: 0.2s;">
+          下一句 &gt;
+        </button>
+      </div>
+
+      <!-- 进度条 -->
+      <div style="width: 100%; background: #e0e0e0; height: 8px;">
+        <div id="progressBar" style="height: 100%; background: linear-gradient(90deg, #FEB47B, #FF7E5F); width: 0%; transition: width 0.4s ease;"></div>
+      </div>
+      
+      <!-- 语音诊断信息 -->
+      <div id="voiceIndicator" style="padding: 6px; text-align: center; font-size: 12px; color: #888; background: #f0f0f0;">
+        正在检测本地与在线双声语音引擎...
+      </div>
+
+    </div>
+  </foreignObject>
+
+  <!-- 交互逻辑与发音引擎 -->
+  <script type="text/javascript">
+    <![CDATA[
+    // 对话数据
+    const dialog = [
+      { speaker: "王一飞", hanzi: "你在做什么？", pinyin: "Nǐ zài zuò shénme?", en: "What are you doing?" },
+      { speaker: "李文", hanzi: "我在学习呢。", pinyin: "Wǒ zài xuéxí ne.", en: "I am studying." },
+      { speaker: "王一飞", hanzi: "你学习忙不忙？", pinyin: "Nǐ xuéxí máng bù máng?", en: "Are you busy with your studies?" },
+      { speaker: "李文", hanzi: "非常忙，我学医，我们的课很多。", pinyin: "Fēicháng máng, wǒ xué yī, wǒmen de kè hěn duō.", en: "Very busy, I study medicine, we have a lot of classes." },
+      { speaker: "王一飞", hanzi: "那你现在要不要和我去超市？", pinyin: "Nà nǐ xiànzài yào bú yào hé wǒ qù chāoshì?", en: "Then do you want to go to the supermarket with me now?" },
+      { speaker: "李文", hanzi: "不去，我今天要读一本医学书。", pinyin: "Bú qù, wǒ jīntiān yào dú yì běn yīxué shū.", en: "No, I need to read a medical book today." },
+      { speaker: "王一飞", hanzi: "小雪呢？小雪起床没起床？", pinyin: "Xiǎoxuě ne? Xiǎoxuě qǐchuáng méi qǐchuáng?", en: "What about Xiaoxue? Is Xiaoxue up yet?" },
+      { speaker: "李文", hanzi: "没起床呢，她还在睡觉。", pinyin: "Méi qǐchuáng ne, tā hái zài shuìjiào.", en: "Not up yet, she is still sleeping." },
+      { speaker: "王一飞", hanzi: "好吧，那我一个人去超市。", pinyin: "Hǎo ba, nà wǒ yí gè rén qù chāoshì.", en: "Alright, then I'll go to the supermarket alone." }
+    ];
+
+    let currentIndex = 0;
+    window.utteranceCache = []; // 修复长文本语音内存被回收的Bug
+
+    const startScreen = document.getElementById('startScreen');
+    const speakerTag = document.getElementById('speakerTag');
+    const pinyinTag = document.getElementById('pinyin');
+    const hanziTag = document.getElementById('hanzi');
+    const englishTag = document.getElementById('english');
+    const progressBar = document.getElementById('progressBar');
+    const voiceIndicator = document.getElementById('voiceIndicator');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    // UI 更新函数
+    function updateUI() {
+      const d = dialog[currentIndex];
+      const isMale = d.speaker === "王一飞";
+      
+      speakerTag.innerHTML = isMale ? "🧔🏻‍♂️ 王一飞 (Wáng Yīfēi)" : "👩🏻‍💼 李文 (Lǐ Wén)";
+      speakerTag.style.color = isMale ? "#2980b9" : "#c0392b";
+      speakerTag.style.background = isMale ? "#eaf2f8" : "#fdedec";
+
+      pinyinTag.innerText = d.pinyin;
+      hanziTag.innerText = d.hanzi;
+      englishTag.innerText = d.en;
+
+      progressBar.style.width = ((currentIndex + 1) / dialog.length * 100) + '%';
+      
+      prevBtn.style.opacity = currentIndex === 0 ? '0.3' : '1';
+      nextBtn.style.opacity = currentIndex === dialog.length - 1 ? '0.3' : '1';
+    }
+
+    // 智能语音播放函数
+    function playAudio() {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel(); 
+      
+      // 添加 50ms 延迟，防止引擎吞音卡顿
+      setTimeout(() => {
+          const d = dialog[currentIndex];
+          // 将逗号替换为带空格的逗号，强制 TTS 引擎在这里稍微停顿换气，听起来更像真人
+          let textToSpeak = d.hanzi.replace(/，/g, "，   ").replace(/。/g, "。 ");
+          
+          const ut = new SpeechSynthesisUtterance(textToSpeak);
+          window.utteranceCache.push(ut); 
+          
+          ut.lang = 'zh-CN';
+          ut.rate = 0.88; // 略微放慢语速，适合外国学生跟读
+          
+          let voices = window.speechSynthesis.getVoices();
+          let zhVoices = voices.filter(v => v.lang.includes('zh') || v.lang.includes('cmn'));
+          
+          const isMale = (d.speaker === "王一飞");
+          let bestVoice = null;
+          let isSimulatedMale = false;
+
+          if (zhVoices.length > 0) {
+              if (isMale) {
+                  // 尝试寻找男声模型 (云希, 云健, 康康 等)
+                  bestVoice = zhVoices.find(v => v.name.toLowerCase().match(/(yunxi|yunjian|yunyang|kangkang|lijian|zhiwei)/));
+                  
+                  // 若无男声包，选用自然女声，并打上“需要变声”的标记
+                  if (!bestVoice) {
+                      bestVoice = zhVoices.find(v => v.name.includes('Natural') || v.name.includes('Online')) || zhVoices[0];
+                      isSimulatedMale = true; 
+                  }
+              } else {
+                  // 寻找女声模型 (晓晓, 婷婷, 晓伊 等)
+                  bestVoice = zhVoices.find(v => v.name.toLowerCase().match(/(xiaoxiao|xiaoyi|tingting|yaoyao|huihui|meijia)/));
+                  if (!bestVoice) {
+                      bestVoice = zhVoices.find(v => v.name.includes('Natural') || v.name.includes('Online')) || zhVoices[0];
+                  }
+              }
+          }
+
+          if (bestVoice) {
+              ut.voice = bestVoice;
+              if (isSimulatedMale) {
+                  // 核心：降调变声处理，完美模拟男声
+                  ut.pitch = 0.65; 
+                  voiceIndicator.innerText = "⚠️ 电脑未安装男声，已自动对 [" + bestVoice.name + "] 进行降调变声处理模拟男声";
+                  voiceIndicator.style.color = "#d35400";
+              } else {
+                  ut.pitch = 1.0; 
+                  voiceIndicator.innerText = "✅ 当前采用的高级发音引擎: " + bestVoice.name;
+                  voiceIndicator.style.color = "#FF7E5F";
+              }
+          } else {
+              voiceIndicator.innerText = "⚠️ 无法获取中文语音，请检查系统设置。";
+          }
+
+          window.speechSynthesis.speak(ut);
+      }, 50);
+    }
+
+    // 事件绑定
+    startScreen.addEventListener('click', () => {
+      startScreen.style.opacity = '0';
+      setTimeout(() => { startScreen.style.display = 'none'; }, 400);
+      
+      // 激活浏览器音频上下文
+      let initUt = new SpeechSynthesisUtterance('');
+      window.speechSynthesis.speak(initUt);
+      
+      updateUI();
+      setTimeout(playAudio, 400); // 给系统一点加载在线模型的时间
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateUI();
+        playAudio();
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentIndex < dialog.length - 1) {
+        currentIndex++;
+        updateUI();
+        playAudio();
+      }
+    });
+
+    document.getElementById('playBtn').addEventListener('click', () => {
+      playAudio();
+    });
+
+    // 悬停动画效果
+    const buttons = [prevBtn, nextBtn, document.getElementById('playBtn')];
+    buttons.forEach(btn => {
+      btn.addEventListener('mouseover', () => btn.style.transform = 'scale(1.05)');
+      btn.addEventListener('mouseout', () => btn.style.transform = 'scale(1)');
+      btn.addEventListener('mousedown', () => btn.style.transform = 'scale(0.95)');
+      btn.addEventListener('mouseup', () => btn.style.transform = 'scale(1.05)');
+    });
+
+    updateUI();
+    ]]>
+  </script>
+</svg>
